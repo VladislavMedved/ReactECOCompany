@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { observable, computed, autorun, action, transaction } from "mobx";
-import { Provider, inject } from "mobx-react";
+import { observable, computed, autorun, action } from "mobx";
+import { Provider } from "mobx-react";
 import './index.css';
 import { App } from './App';
 import * as serviceWorker from './serviceWorker';
@@ -66,7 +66,10 @@ toDoTasksStore.setValue(0, "copy texts", true);
 
 
 ReactDOM.render(
-<Provider store={toDoTasksStore}><App/></Provider>, document.getElementById('root'));
+    <Provider store={toDoTasksStore}>
+        <App/>
+    </Provider>, document.getElementById('root')
+);
 
 
 

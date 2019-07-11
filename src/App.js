@@ -1,29 +1,51 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
+import { computed } from "mobx";
+import { Button } from '@material-ui/core';
 
+import { Tasks } from "./tasks";
+
+@inject("store")
+@observer
 class Person extends React.Component {
-  render() {
-      return (
-          <div className="123">
-              <h1>{this.props.name}</h1>
-              <h2>role: {this.props.role}</h2>
-          </div>
-      );
-  }
+    @computed
+    get taskCount() {
+        return this.props.store.tasks.filter(x => x.assignee === this.props.name).length;
+    }
+
+    render() {
+        return (
+            <div className="person">
+                <h1>{this.props.name}</h1>
+                <h2>role: {this.props.role}</h2>
+                <span>tasks to do: {this.taskCount}</span>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    className="promote-btn"
+                    onClick={this.props.onPromote}
+                >
+                        Promote
+                </Button>
+            </div>
+        );
+    }
 }
 
 @observer
-class Company extends React.Component {
+class Persons extends React.Component {
   render() {
       return (
-          <React.Fragment>
+          <>
               {this.props.persons.map(x => (
-                  <React.Fragment key={x.name}>
-                      <Person name={x.name} role={x.role}/>
-                      <button onClick={() => this.props.onBtnClick(x)}>Promote</button>
-                  </React.Fragment>
+                <Person
+                    key={x.name}
+                    name={x.name}
+                    role={x.role}
+                    onPromote={() => this.props.onBtnClick(x)}
+                />
               ))}
-          </React.Fragment>
+          </>
       );
   }
 }
@@ -34,44 +56,11 @@ class App extends React.Component {
   render() {
       return (
           <>
-            <Company persons={this.props.store.persons} onBtnClick={this.props.store.promote}/>
+            <Persons persons={this.props.store.persons} onBtnClick={this.props.store.promote}/>
             <Tasks/>
           </>
       );
   }
 }
-
-@inject("store")
-@observer
-class Tasks extends React.Component {
-    render() {
-        return (
-            <ul style={{ listStyle: "none"}}>
-                {this.props.store.tasks.map((item, index) => (
-                    <li key={uuidv4() + item.taskName}>
-                        <input
-                            type="checkbox"
-                            checked={item.completed}
-                            onChange={() => item.completed = !item.completed}
-                        />
-                        {item.taskName}&nbsp;
-                        <select>
-                            {this.props.store.persons.map(item => (
-                                <option key={uuidv4() + item.name}>{item.name}</option>
-                            ))}
-                        </select>
-                    </li>
-                ))}
-            </ul>
-        );
-    }
-}
-
-function uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
 
 export { App };
