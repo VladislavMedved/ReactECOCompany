@@ -8,17 +8,13 @@ import { Tasks } from "./tasks";
 @inject("store")
 @observer
 class Person extends React.Component {
-    @computed
-    get taskCount() {
-        return this.props.store.tasks.filter(x => x.assignee === this.props.name).length;
-    }
-
     render() {
+        const { name, role, taskCount } = this.props.person;
         return (
             <div className="person">
-                <h1>{this.props.name}</h1>
-                <h2>role: {this.props.role}</h2>
-                <span>tasks to do: {this.taskCount}</span>
+                <h1>{name}</h1>
+                <h2>role: {role}</h2>
+                <span>tasks to do: {taskCount}</span>
                 <Button
                     variant="contained"
                     color="primary"
@@ -26,6 +22,14 @@ class Person extends React.Component {
                     onClick={this.props.onPromote}
                 >
                         Promote
+                </Button>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    className="promote-btn"
+                    onClick={() => this.props.store.personStore.completeAllTasks(this.props.person) }
+                >
+                        JOB DONE!!!
                 </Button>
             </div>
         );
@@ -40,8 +44,7 @@ class Persons extends React.Component {
               {this.props.persons.map(x => (
                 <Person
                     key={x.name}
-                    name={x.name}
-                    role={x.role}
+                    person={x}
                     onPromote={() => this.props.onBtnClick(x)}
                 />
               ))}
@@ -56,7 +59,7 @@ class App extends React.Component {
   render() {
       return (
           <>
-            <Persons persons={this.props.store.persons} onBtnClick={this.props.store.promote}/>
+            <Persons persons={this.props.store.personStore.persons} onBtnClick={this.props.store.personStore.promote}/>
             <Tasks/>
           </>
       );

@@ -1,72 +1,97 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { observable, computed, autorun, action } from "mobx";
+import { types, getSnapshot, applySnapshot, getParent } from "mobx-state-tree";
 import { Provider } from "mobx-react";
 import './index.css';
 import { App } from './App';
 import * as serviceWorker from './serviceWorker';
+import { setNormalizedScrollLeft } from 'normalize-scroll-left';
 
 
+var persons = [
+    {
+        name: "Igor",
+        role: "Team Lead"
+    },
+    {
+        name: "Vitalik",
+        role: "Lead Software developer"
+    },
+    {
+        name: "Vlad",
+        role: "Software developer"
+    },
+];
 
-class ToDoTasksStore {
-    @observable tasks = [];
-    @observable persons = [
-        {
-            name: "Igor",
-            role: "Team Lead"
-        },
-        {
-            name: "Vitalik",
-            role: "Lead Software developer"
-        },
-        {
-            name: "Vlad",
-            role: "Software developer"
-        },
-    ];
-
-    constructor() {
-        autorun(() => console.log(this.report));
+const Person = types.model({
+    name: types.optional(types.string, "ra-ta-ta-ta"),
+    role: types.string
+}).views(self => ({
+    get taskCount() {
+        return getParent(getParent(getParent(self))).taskStore.tasks.filter(x => x.assignee === self.name && !x.completed).length;
     }
+}))
+.actions(self => ({
+    setName(name) {
+        self.name = name;
+    },
+}));
 
-    @computed
-    get report() {
-        if(!this.tasks.length) {
-            return "empty";
-        }
-        return this.tasks.map(x =>  `${x.taskName} completed: ${x.completed} `).join('\n');
+
+const Task = types.model({
+    taskName: types.string,
+    completed: false,
+    assignee: types.maybeNull(types.string)
+}).actions(self => ({
+    setAssignee(assignee) {
+        self.assignee = assignee;
+    },
+    complete() {
+        self.completed = true;
     }
+}));
 
-    addTask = (taskName) => {
-        this.tasks.push({
-            taskName: taskName,
-            completed: false,
-            assignee: null
-        })
+const PersonStore = types.model({
+    persons: types.array(Person),
+}).actions(self => ({
+    promote(person) {
+        self.persons.find((x) => person.name === x.name).role = "Head of Vasiliy Malaschenko";
+    },
+    completeAllTasks(person) {
+        getParent(self).taskStore.tasks.filter(x => x.assignee === person.name).forEach(x => x.complete());
     }
+}));
 
-    promote = (person) => {
-        this.persons.find((x) => person.name === x.name).role = "Head of Vasiliy Malaschenko";
-    }
-
-    @action
+const TaskStore = types.model({
+    tasks: types.array(Task)
+}).actions(self => ({
+    addTask(taskName) {
+        self.tasks.push(Task.create({taskName}))
+    },
     setValue(index, name, completed) {
-        this.tasks[index].taskName = name;
-        this.tasks[index].completed = completed;
+        self.tasks[index].taskName = name;
+        self.tasks[index].completed = completed;
     }
-};
+}));
+
+const AppStore = types.model({
+    personStore: types.optional(PersonStore, {}),
+    taskStore: types.optional(TaskStore, {}),
+});
 
 
-const toDoTasksStore = window.store = new ToDoTasksStore();
-toDoTasksStore.addTask('fix bug on GPS apply card');
-toDoTasksStore.addTask('fix bug on GPS apply card 34234234');
+const appStore = window.store = AppStore.create();
 
-toDoTasksStore.setValue(0, "copy texts", true);
+applySnapshot(appStore.personStore, {persons});
+appStore.taskStore.addTask('fix bug on GPS apply card');
+appStore.taskStore.addTask('fix bug on GPS apply card 34234234');
 
 
+console.log(getSnapshot(appStore));
 
 ReactDOM.render(
-    <Provider store={toDoTasksStore}>
+    <Provider store={appStore}>
         <App/>
     </Provider>, document.getElementById('root')
 );

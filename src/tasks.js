@@ -18,7 +18,7 @@ class Tasks extends React.Component {
     render() {
         return (
             <ul style={{ listStyle: "none" }}>
-                {this.props.store.tasks.map((task) => (
+                {this.props.store.taskStore.tasks.map((task) => (
                     <Task
                         key={this.generateKey(task.taskName)}
                         taskName={task.taskName}
@@ -54,15 +54,14 @@ class SelectAssignee extends React.PureComponent {
         return this.keys[name];
     }
     assigne = (event) => {
-        var task = this.props.store.tasks.find(x => x.taskName === this.props.taskName);
-        task.assignee = event.target.value;
+        var task = this.props.store.taskStore.tasks.find(x => x.taskName === this.props.taskName);
+        task.setAssignee(event.target.value);
     }
     render() {
-        console.log(`SelectAssignee render ${this.props.taskName}`)
         return (
             <select onChange={this.assigne}>
                 <option value="" disabled selected>Select assignee</option>
-                {this.props.store.persons.map((person) => (
+                {this.props.store.personStore.persons.map((person) => (
                     <option key={this.generateKey(person.name)}>
                         {person.name}
                     </option>
