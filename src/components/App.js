@@ -1,6 +1,5 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
-import { computed } from "mobx";
 import { Button } from '@material-ui/core';
 
 import { Tasks } from "./tasks";
@@ -9,12 +8,12 @@ import { Tasks } from "./tasks";
 @observer
 class Person extends React.Component {
     render() {
-        const { name, role, taskCount } = this.props.person;
+        const { name, role } = this.props.person;
         return (
             <div className="person">
                 <h1>{name}</h1>
                 <h2>role: {role}</h2>
-                <span>tasks to do: {taskCount}</span>
+                <span>tasks to do: {this.props.store.personStore.getTasksCount(this.props.person.name)}</span>
                 <Button
                     variant="contained"
                     color="primary"

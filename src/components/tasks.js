@@ -1,6 +1,8 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 
+import { uuidv4 } from "../utils/uuidv4"
+
 @inject("store")
 @observer
 class Tasks extends React.Component {
@@ -13,7 +15,7 @@ class Tasks extends React.Component {
         return this.keys[taskName];
     }
     onChange = (task) => () => {
-        task.completed = !task.completed
+        task.complete(!task.completed);
     }
     render() {
         return (
@@ -59,8 +61,8 @@ class SelectAssignee extends React.PureComponent {
     }
     render() {
         return (
-            <select onChange={this.assigne}>
-                <option value="" disabled selected>Select assignee</option>
+            <select onChange={this.assigne} defaultValue="">
+                <option value="" disabled>Select assignee</option>
                 {this.props.store.personStore.persons.map((person) => (
                     <option key={this.generateKey(person.name)}>
                         {person.name}
@@ -69,13 +71,6 @@ class SelectAssignee extends React.PureComponent {
             </select>
         );
     }
-}
-
-function uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
 }
 
 export { Tasks };

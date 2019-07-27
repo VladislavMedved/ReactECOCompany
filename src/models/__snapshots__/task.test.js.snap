@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Mobx-State-tree models should be possible to set assignee to the task 1`] = `
+Object {
+  "assignee": "Igor Schuchenko",
+  "completed": false,
+  "taskName": "fix 3ds FIS functionality on ClientDetails",
+}
+`;
+
+exports[`Mobx-State-tree models should be possible to set assignee to the task 2`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": "/assignee",
+    "value": "Igor",
+  },
+  Object {
+    "op": "replace",
+    "path": "/assignee",
+    "value": "Igor Schuchenko",
+  },
+]
+`;
