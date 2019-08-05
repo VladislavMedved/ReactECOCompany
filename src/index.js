@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { getSnapshot } from "mobx-state-tree";
 import { Provider } from "mobx-react";
+import { connectReduxDevtools } from "mst-middlewares";
+import makeInspectable from "mobx-devtools-mst";
 
 import './index.css';
 import * as serviceWorker from './serviceWorker';
@@ -9,7 +11,11 @@ import * as serviceWorker from './serviceWorker';
 import { appStore } from "./stores/appStore";
 import { App } from './components/App';
 
+
 console.log(getSnapshot(appStore));
+
+makeInspectable(appStore);
+connectReduxDevtools(require("remotedev"), appStore);
 
 ReactDOM.render(
     <Provider store={appStore}>
