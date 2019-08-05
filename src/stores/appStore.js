@@ -1,22 +1,9 @@
-import { types, applySnapshot, getParent } from "mobx-state-tree";
+import { types, applySnapshot, getParent, getEnv } from "mobx-state-tree";
+
+import { Api } from "./api";
 
 import { Task } from "../models/task";
 import { Person } from "../models/person";
-
-var persons = [
-    {
-        name: "Igor",
-        role: "Team Lead"
-    },
-    {
-        name: "Vitalik",
-        role: "Lead Software developer"
-    },
-    {
-        name: "Vlad",
-        role: "Software developer"
-    },
-];
 
 const PersonStore = types
 .model({
@@ -54,14 +41,37 @@ const TaskStore = types.model({
 const AppStore = types.model({
     personStore: types.optional(PersonStore, {}),
     taskStore: types.optional(TaskStore, {}),
-});
+}).views(self => ({
+    get env() {
+        return getEnv(self);
+    }
+})).actions(self => ({
+    afterCreate() {
+        const itr = self.load();
 
+        function run(arg) {
+            var res = itr.next(arg);
+    
+            if(res.done) {
+                return res.value;
+            } else {
+                Promise.resolve(res.value).then(run);
+            }
+        }
+    
+        run();
+    },
+    load: function* () {
+        const persons = yield self.env.getPersons();
+        applySnapshot(self.personStore.persons, persons);
 
-const appStore = window.store = AppStore.create();
+        const tasks = yield self.env.getTasks();
+        applySnapshot(self.taskStore.tasks, tasks);
+    }
+}));
 
-applySnapshot(appStore.personStore, {persons});
-appStore.taskStore.addTask('fix bug on GPS apply card');
-appStore.taskStore.addTask('fix bug on GPS apply card 34234234');
+const environment = new Api();
+const appStore = window.store = AppStore.create({}, environment);
 
 export { appStore };
 
