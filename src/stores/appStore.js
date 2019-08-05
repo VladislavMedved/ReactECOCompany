@@ -47,28 +47,32 @@ const AppStore = types.model({
     }
 })).actions(self => ({
     afterCreate() {
-        const itr = self.load();
-
-        function run(arg) {
-            var res = itr.next(arg);
-    
-            if(res.done) {
-                return res.value;
-            } else {
-                Promise.resolve(res.value).then(run);
-            }
-        }
-    
-        run();
+        self.load();
     },
-    load: function* () {
+    load: runner(function* () {
         const persons = yield self.env.getPersons();
         applySnapshot(self.personStore.persons, persons);
 
         const tasks = yield self.env.getTasks();
         applySnapshot(self.taskStore.tasks, tasks);
-    }
+    })
 }));
+
+function runner(genFn) {
+    const itr = genFn();
+
+    function run(arg) {
+        var res = itr.next(arg);
+
+        if(res.done) {
+            return res.value;
+        } else {
+            Promise.resolve(res.value).then(run);
+        }
+    }
+
+    return run;
+}
 
 const environment = new Api();
 const appStore = window.store = AppStore.create({}, environment);
